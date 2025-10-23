@@ -1,8 +1,9 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
+import type { AuthenticatedRequest } from '../middleware/auth.middleware';
 import { usersService } from '../services/users.service';
 
 export class UsersController {
-  async login(req: Request, res: Response): Promise<void> {
+  async login(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { email, password } = req.body;
 
@@ -19,7 +20,7 @@ export class UsersController {
     }
   }
 
-  async register(req: Request, res: Response): Promise<void> {
+  async register(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { email, password, firstName, lastName } = req.body;
 
@@ -41,9 +42,18 @@ export class UsersController {
     }
   }
 
-  async getUserById(req: Request, res: Response): Promise<void> {
+  async getUserById(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { userId } = req.params;
+
+      // Verify user is authenticated and can only access their own profile
+      if (req.user?.userId !== userId) {
+        res.status(403).json({
+          success: false,
+          message: 'Forbidden: You can only access your own profile',
+        });
+        return;
+      }
 
       const user = await usersService.getUserById(userId);
 

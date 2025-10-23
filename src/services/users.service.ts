@@ -1,8 +1,14 @@
 import { UserModel } from '../models/user.model';
 import type { User, LoginRequest, RegisterRequest, AuthResponse } from '../interfaces/user.interface';
+import { comparePasswords } from '../utils/bcrypt';
+import { generateToken } from '../utils/jwt';
+
+export interface AuthResponseWithToken extends AuthResponse {
+  token?: string;
+}
 
 export class UsersService {
-  async login(loginRequest: LoginRequest): Promise<AuthResponse> {
+  async login(loginRequest: LoginRequest): Promise<AuthResponseWithToken> {
     try {
       const { email, password } = loginRequest;
 
@@ -22,15 +28,20 @@ export class UsersService {
         };
       }
 
-      if (user.password !== password) {
+      // Compare hashed password
+      const isPasswordValid = await comparePasswords(password, user.password);
+      if (!isPasswordValid) {
         return {
           success: false,
           message: 'Invalid password',
         };
       }
 
+      const userId = user._id?.toString() || '';
+      const token = generateToken(userId, user.email);
+
       const userData: User = {
-        _id: user._id?.toString(),
+        _id: userId,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -41,6 +52,7 @@ export class UsersService {
         success: true,
         message: 'Login successful',
         user: userData,
+        token,
       };
     } catch (error) {
       console.error('Error during login:', error);
@@ -51,7 +63,7 @@ export class UsersService {
     }
   }
 
-  async register(registerRequest: RegisterRequest): Promise<AuthResponse> {
+  async register(registerRequest: RegisterRequest): Promise<AuthResponseWithToken> {
     try {
       const { email, password, firstName, lastName } = registerRequest;
 
@@ -89,8 +101,11 @@ export class UsersService {
 
       await newUser.save();
 
+      const userId = newUser._id?.toString() || '';
+      const token = generateToken(userId, newUser.email);
+
       const userData: User = {
-        _id: newUser._id?.toString(),
+        _id: userId,
         email: newUser.email,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
@@ -101,6 +116,7 @@ export class UsersService {
         success: true,
         message: 'User registered successfully',
         user: userData,
+        token,
       };
     } catch (error) {
       console.error('Error during registration:', error);
