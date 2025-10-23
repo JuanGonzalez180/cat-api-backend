@@ -1,44 +1,49 @@
 version: '3.8'
 
 services:
+  # MongoDB Database
   mongodb:
-    image: mongo:7.0
-    container_name: cat-api-mongodb
+    image: mongo:7
+    container_name: xpert-group-cat-api-mongodb
     ports:
-      - '27017:27017'
+      - "27017:27017"
     environment:
-      MONGO_INITDB_DATABASE: cat-api
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - mongodb_data:/data/db
+    restart: unless-stopped
     networks:
-      - cat-api-network
+      - backend-network
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # Backend
   backend:
-    build: .
-    container_name: cat-api-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: xpert-group-cat-api-backend
     ports:
-      - '3000:3000'
+      - "3000:3000"
     environment:
-      MONGODB_URI: mongodb://mongodb:27017/cat-api
       NODE_ENV: production
-      CAT_API_KEY: ${CAT_API_KEY}
-      CAT_API_URL: https://api.thecatapi.com/v1
-      JWT_SECRET: ${JWT_SECRET}
+      MONGODB_URI: mongodb://root:password@mongodb:27017/cat-api?authSource=admin
+      JWT_SECRET: k7$mP2@xQ9#vL4&nR8!jW5%bF3^dH6*sA1(cE0)tG
+      JWT_EXPIRATION: 24h
     depends_on:
       mongodb:
         condition: service_healthy
-    networks:
-      - cat-api-network
     restart: unless-stopped
+    networks:
+      - backend-network
 
 volumes:
   mongodb_data:
 
 networks:
-  cat-api-network:
+  backend-network:
     driver: bridge

@@ -3,7 +3,13 @@ npm-debug.log
 dist
 .git
 .gitignore
-.env
+.vscode
+.idea
 .env.local
+.env.development
+.env.test
+*.log
+*.swp
+*.swo
+*~
 .DS_Store
-coverage
