@@ -1,21 +1,24 @@
 import type { Response } from 'express';
 import type { AuthenticatedRequest } from '../middleware/auth.middleware';
 import { usersService } from '../services/users.service';
+import { logger } from '../utils/logger';
+import { HTTP_STATUS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../constants/http.constants';
 
 export class UsersController {
   async login(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { email, password } = req.body;
 
+      logger.info('User login attempt', { email });
       const result = await usersService.login({ email, password });
 
-      const statusCode = result.success ? 200 : 401;
+      const statusCode = result.success ? HTTP_STATUS.OK : HTTP_STATUS.UNAUTHORIZED;
       res.status(statusCode).json(result);
     } catch (error) {
-      console.error('Error in login:', error);
-      res.status(500).json({
+      logger.error('Error in login', error);
+      res.status(HTTP_STATUS.INTERNAL_ERROR).json({
         success: false,
-        message: 'Internal server error',
+        message: ERROR_MESSAGES.INTERNAL_ERROR,
       });
     }
   }
@@ -24,6 +27,7 @@ export class UsersController {
     try {
       const { email, password, firstName, lastName } = req.body;
 
+      logger.info('User registration attempt', { email, firstName, lastName });
       const result = await usersService.register({
         email,
         password,
@@ -31,13 +35,13 @@ export class UsersController {
         lastName,
       });
 
-      const statusCode = result.success ? 201 : 400;
+      const statusCode = result.success ? HTTP_STATUS.CREATED : HTTP_STATUS.CONFLICT;
       res.status(statusCode).json(result);
     } catch (error) {
-      console.error('Error in register:', error);
-      res.status(500).json({
+      logger.error('Error in register', error);
+      res.status(HTTP_STATUS.INTERNAL_ERROR).json({
         success: false,
-        message: 'Internal server error',
+        message: ERROR_MESSAGES.INTERNAL_ERROR,
       });
     }
   }
@@ -46,11 +50,14 @@ export class UsersController {
     try {
       const { userId } = req.params;
 
+      logger.info('Fetching user profile', { userId });
+
       // Verify user is authenticated and can only access their own profile
       if (req.user?.userId !== userId) {
-        res.status(403).json({
+        logger.warn('Unauthorized access attempt', { requestUserId: req.user?.userId, targetUserId: userId });
+        res.status(HTTP_STATUS.FORBIDDEN).json({
           success: false,
-          message: 'Forbidden: You can only access your own profile',
+          message: ERROR_MESSAGES.FORBIDDEN_ACCESS,
         });
         return;
       }
@@ -58,22 +65,24 @@ export class UsersController {
       const user = await usersService.getUserById(userId);
 
       if (!user) {
-        res.status(404).json({
+        logger.warn('User not found', { userId });
+        res.status(HTTP_STATUS.NOT_FOUND).json({
           success: false,
-          message: 'User not found',
+          message: ERROR_MESSAGES.USER_NOT_FOUND,
         });
         return;
       }
 
-      res.status(200).json({
+      res.status(HTTP_STATUS.OK).json({
         success: true,
+        message: SUCCESS_MESSAGES.USER_FETCHED,
         data: user,
       });
     } catch (error) {
-      console.error('Error in getUserById:', error);
-      res.status(500).json({
+      logger.error('Error in getUserById', error);
+      res.status(HTTP_STATUS.INTERNAL_ERROR).json({
         success: false,
-        message: 'Internal server error',
+        message: ERROR_MESSAGES.INTERNAL_ERROR,
       });
     }
   }

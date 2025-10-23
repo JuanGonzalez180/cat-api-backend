@@ -146,6 +146,25 @@ Estructura:
 - Middleware para validaciones
 - Error handling consistente
 
+Características:
+
+### Logger Simple
+
+Archivo `src/utils/logger.ts` proporciona logging con timestamps:
+- logger.info(message, data)
+- logger.error(message, error)
+- logger.warn(message, data)
+
+Uso:
+```typescript
+import { logger } from '../utils/logger';
+
+logger.info('Fetching breeds', { limit, page });
+logger.error('Error in getBreeds', error);
+logger.warn('Missing parameter', { param: 'breed_id' });
+```
+
+Comandos:
 ```bash
 npm update          # Actualizar dependencias
 npm run lint        # ESLint
