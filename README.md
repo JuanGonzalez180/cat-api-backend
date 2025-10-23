@@ -2,53 +2,48 @@
 
 Backend Express + TypeScript para la API de gatos. Proporciona autenticación con JWT, gestión de usuarios y acceso a información de razas de gatos.
 
-## 🚀 Tecnologías
+## Tecnologías
 
-- **Node.js 20** - Runtime
-- **Express.js** - Framework web
-- **TypeScript** - Tipado estático
-- **MongoDB** - Base de datos NoSQL
-- **JWT** - Autenticación
-- **bcrypt** - Hashing de contraseñas
-- **Docker** - Containerización
+- Node.js 20
+- Express.js
+- TypeScript
+- MongoDB
+- JWT
+- bcrypt
+- Docker
 
-## 📋 Requisitos
+## Requisitos
 
 - Node.js 20+
 - MongoDB (local o Docker)
 - npm o yarn
 
-## ⚙️ Configuración
+## Configuración
 
-### 1. Variables de Entorno
+### Variables de Entorno
 
-Copia el archivo `.env.template` a `.env` y completa los valores:
+Copia `.env.template` a `.env`:
 
 ```bash
 cp .env.template .env
 ```
 
 Variables requeridas:
-- `PORT` - Puerto donde corre la API (default: 3000)
-- `MONGODB_URI` - URI de conexión a MongoDB
-- `NODE_ENV` - Entorno (development, production)
-- `CAT_API_KEY` - API key de TheCatAPI
-- `CAT_API_URL` - URL de TheCatAPI
-- `JWT_SECRET` - Secreto para firmar JWT
+- PORT (default: 3000)
+- MONGODB_URI
+- NODE_ENV (development, production)
+- CAT_API_KEY
+- CAT_API_URL
+- JWT_SECRET
 
-### 2. Instalación de Dependencias
+### Instalación
 
 ```bash
 npm install
-```
-
-### 3. Compilar TypeScript
-
-```bash
 npm run build
 ```
 
-## 🏃 Ejecutar
+## Ejecución
 
 ### Desarrollo
 
@@ -56,7 +51,7 @@ npm run build
 npm run dev
 ```
 
-El servidor estará disponible en `http://localhost:3000`
+Disponible en `http://localhost:3000`
 
 ### Producción
 
@@ -65,83 +60,64 @@ npm run build
 npm start
 ```
 
-## 🧪 Tests
-
-Ejecutar pruebas unitarias:
+## Tests
 
 ```bash
-npm test                      # Ejecutar tests
-npm test -- --watch         # Modo watch
-npm test -- --coverage      # Con reporte de cobertura
+npm test
+npm test -- --watch
+npm test -- --coverage
 ```
 
-## 🐳 Docker
+## Docker
 
-### Con Docker Compose
+### Docker Compose
 
 ```bash
-# Construir y ejecutar
-docker-compose up -d
-
-# Ver logs
-docker-compose logs -f
-
-# Detener
-docker-compose down
+docker-compose up -d      # Iniciar
+docker-compose down       # Detener
+docker-compose logs -f    # Ver logs
 ```
 
-El docker-compose incluye:
-- **Backend** (puerto 3000)
-- **MongoDB** (puerto 27017)
+Incluye:
+- Backend (puerto 3000)
+- MongoDB (puerto 27017)
 
-### Con Docker manualmente
+### Docker Manual
 
 ```bash
-# Construir imagen
 docker build -t cat-api-backend .
-
-# Ejecutar contenedor
-docker run -p 3000:3000 \
-  --env-file .env \
-  cat-api-backend
+docker run -p 3000:3000 --env-file .env cat-api-backend
 ```
 
-## 📡 API Endpoints
+## API Endpoints
 
-### Autenticación
+Autenticación:
+- POST /api/auth/login
+- POST /api/auth/register
 
-- `POST /api/auth/login` - Login con email/password
-- `POST /api/auth/register` - Registrar nuevo usuario
+Usuarios:
+- GET /api/users/:userId (requiere JWT)
 
-### Usuarios
+Gatos:
+- GET /api/cats/breeds (requiere JWT)
+- GET /api/cats/breeds/:id (requiere JWT)
+- GET /api/cats/search?query=... (requiere JWT)
 
-- `GET /api/users/:userId` - Obtener perfil de usuario (requiere JWT)
+Imágenes:
+- GET /api/images?breed_id=... (requiere JWT)
 
-### Gatos
-
-- `GET /api/cats/breeds` - Listar razas de gatos (requiere JWT)
-- `GET /api/cats/breeds/:id` - Obtener raza por ID (requiere JWT)
-- `GET /api/cats/search?query=...` - Buscar razas (requiere JWT)
-
-### Imágenes
-
-- `GET /api/images?breed_id=...` - Obtener imágenes por raza (requiere JWT)
-
-## 🔒 Autenticación
-
-Todos los endpoints excepto login/register requieren un JWT en el header:
-
+JWT requerido en header:
 ```
 Authorization: Bearer <token>
 ```
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 src/
 ├── config/          # Configuración de base de datos
 ├── controllers/     # Controladores
-├── middleware/      # Middlewares (auth, CORS, etc)
+├── middleware/      # Middlewares (auth, CORS)
 ├── models/          # Modelos de MongoDB
 ├── routes/          # Rutas
 ├── services/        # Servicios de lógica
@@ -150,82 +126,44 @@ src/
 └── server.ts        # Punto de entrada
 ```
 
-## 📊 Variables de Entorno (.env)
+## Variables de Entorno
 
 ```ini
-# Puerto de la API
 PORT=3000
-
-# MongoDB
 MONGODB_URI=mongodb://root:password@localhost:27017/cat-api?authSource=admin
-
-# Entorno
 NODE_ENV=development
-
-# TheCat API
 CAT_API_KEY=tu_api_key_aqui
 CAT_API_URL=https://api.thecatapi.com/v1
-
-# JWT
 JWT_SECRET=tu_secreto_muy_seguro_aqui
 ```
 
-## 🛠️ Desarrollo
+## Desarrollo
 
-### Estructura de código
-
-- Usar TypeScript en todos los archivos
+Estructura:
+- TypeScript en todos los archivos
 - Interfaces para modelos de datos
 - Servicios para lógica compartida
-- Middleware para validaciones y autenticación
+- Middleware para validaciones
 - Error handling consistente
 
-### Actualizar dependencias
-
 ```bash
-npm update
+npm update          # Actualizar dependencias
+npm run lint        # ESLint
+npm run lint:fix    # Linter fix
 ```
 
-### Linter
+## Solución de Problemas
 
-```bash
-# ESLint (si está configurado)
-npm run lint
-npm run lint:fix
-```
+MongoDB no conecta: Verificar que MongoDB corre, MONGODB_URI es correcta en .env
 
-## 🐛 Solución de Problemas
+Puerto 3000 en uso: Cambiar PORT en .env o liberar puerto
 
-### MongoDB no conecta
+JWT inválido: Verificar token en header, JWT_SECRET consistente, token no expirado
 
-Verificar:
-1. MongoDB está corriendo: `mongosh` o `docker ps`
-2. `MONGODB_URI` es correcta en `.env`
-3. Usuario/contraseña son correctos
-4. Red de Docker (si usas Docker): `docker network ls`
-
-### Puerto 3000 en uso
-
-```bash
-# Cambiar puerto en .env
-PORT=3001
-
-# O liberar el puerto
-lsof -i :3000
-kill -9 <PID>
-```
-
-### JWT inválido
-
-Verificar:
-1. Token en header `Authorization: Bearer <token>`
-2. `JWT_SECRET` es consistente
-3. Token no expirado
-
-## 📝 Licencia
+## Licencia
 
 MIT
 
-## 👤 Autor
+## Autor
 
-XpertGroup
+Juan Guillermo Gonzalez
